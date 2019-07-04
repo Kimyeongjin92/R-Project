@@ -97,6 +97,7 @@ write.xlsx(Naver_CINE_Review, file = "클레멘타인_네이버 리뷰.xlsx",
 ## ==============================================================================================
 ##                               클레멘타인 워드 클라우드. 
 ## ==============================================================================================
+## https://kutar37.tistory.com/entry/R%EC%9D%84-%EC%9D%B4%EC%9A%A9%ED%95%9C-%ED%85%8D%EC%8A%A4%ED%8A%B8%EB%A7%88%EC%9D%B4%EB%8B%9D-%EC%9B%8C%EB%93%9C%ED%81%B4%EB%9D%BC%EC%9A%B0%EB%93%9C
 
 # scale 가장 빈도가 큰 단어와 가장 빈도가 작은단어 폰트사이의 크기차이 scale=c(10,1)
 # minfreq 출력될 단어들의 최소빈도
@@ -142,6 +143,16 @@ Clementine_unlist <- unlist(Clementine_Noun)
 Clementine_table  <- table(Clementine_unlist)
 
 # 5. sort
-Clementine_top <-head(sort(Clementine_table, decreasing = T),100)
+Clementine_top    <- head(sort(Clementine_table, decreasing = T),100)
 
 # 6. wordcloud
+wordcloud(names(Clementine_top),Clementine_top,family="baedal")
+
+# 7. 단어 등록(1) : 단일로 등록할 때
+mergeUserDic(data.frame(c("노잼"), "ncn"))
+
+# 8. 단어 등록(2) : 파일로 등록할 때
+add_dic <- readLines("클레멘타인_추가단어.txt")
+for(i in 1:length(add_dic)){
+  mergeUserDic(data.frame(add_dic[i],"ncn"))
+}
