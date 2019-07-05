@@ -98,6 +98,7 @@ write.xlsx(Naver_CINE_Review, file = "클레멘타인_네이버 리뷰.xlsx",
 ##                               클레멘타인 워드 클라우드. 
 ## ==============================================================================================
 ## https://kutar37.tistory.com/entry/R%EC%9D%84-%EC%9D%B4%EC%9A%A9%ED%95%9C-%ED%85%8D%EC%8A%A4%ED%8A%B8%EB%A7%88%EC%9D%B4%EB%8B%9D-%EC%9B%8C%EB%93%9C%ED%81%B4%EB%9D%BC%EC%9A%B0%EB%93%9C
+## https://cran.r-project.org/web/packages/wordcloud2/wordcloud2.pdf  
 
 # scale 가장 빈도가 큰 단어와 가장 빈도가 작은단어 폰트사이의 크기차이 scale=c(10,1)
 # minfreq 출력될 단어들의 최소빈도
@@ -114,6 +115,8 @@ install.packages('wordcloud')
 install.packages('wordcloud2')
 install.packages('RColorBrewer') # 색깔 팔레트
 install.packages('rJava')
+install.packages("extrafont")
+library(extrafont)
 library(KoNLP)
 library(wordcloud)
 library(wordcloud2)
@@ -123,7 +126,7 @@ library(rJava)
 # 0. 사전 추가
 useSejongDic()
 
-# 1. 데이터 불러오기 ----------------------------------------
+# 1. 데이터 불러오기 ---------------------------------------------
 setwd('D:/dudwlsrla92/R-Project/Croling/네이버 영화리뷰')
 getwd()
 Clementine<-read.csv('클레멘타인_네이버 리뷰(2).csv')
@@ -131,7 +134,7 @@ Clementine_reple<-as.character(Clementine$리플)
 length(Clementine_reple)
 str(Clementine_reple)
 
-# 2. 사전에 단어 추가하기. -------------------------------------
+# 2. 사전에 단어 추가하기. ---------------------------------------
 mergeUserDic(data.frame(c("노잼"), "ncn"))
 
 add_dic <- readLines("클레멘타인_추가단어.txt")
@@ -139,7 +142,7 @@ for(i in 1:length(add_dic)){
   mergeUserDic(data.frame(add_dic[i],"ncn"))
 }
 
-# 2. 명사 추출 (extractNoun) -----------------------------------
+# 2. 명사 추출 (extractNoun) -------------------------------------
 Clementine_Noun   <- sapply(Clementine_reple, extractNoun, USE.NAMES = F)
 head(Clementine_Noun)
 
@@ -148,7 +151,7 @@ write(unlist(Clementine_Noun),"클레멘타인_전처리1.txt")
 Cl_unlist <- readLines("클레멘타인_전처리1.txt")
 head(Cl_unlist)
 
-# 4. 전처리 (1)_정규식 -----------------------------------------
+# 4. 전처리 (1)_정규식 --------------------------------------------
 Cl_filter <- gsub("\\d+","",Cl_unlist)
 Cl_filter <- gsub("ㄱ-ㅎ","",Cl_filter)
 Cl_filter <- gsub("ㅜ|ㅠ","",Cl_filter)
@@ -161,7 +164,7 @@ Cl_filter <- gsub(" ","",Cl_filter)
 
 Cl_filter  <- Filter(function(x){nchar(x) >= 2 & nchar(x) <= 6},Cl_filter)
 
-# 4. 전처리 (2)_gsub -------------------------------------------
+# 4. 전처리 (2)_gsub --------------------------------------------
 txt <- readLines("클레멘타인gsub.txt")
 
 i <- 0
@@ -172,19 +175,81 @@ for(i in 1:length(txt)){
 Cl_filter2  <- Filter(function(x){nchar(x) >= 2 & nchar(x) <= 6},Cl_filter)
 head(Cl_filter2)
 
-# 5. 중간저장 write -------------------------------------------
+# 5. 중간저장 write ---------------------------------------------
 write(Cl_filter2,"클레멘타인_전처리2.txt")
 Cl <- readLines("클레멘타인_전처리2.txt")
 head(Cl)
-
-# 4. table 
+-
+# 4. table ------------------------------------------------------
 Cl_table  <- table(Cl)
 head(Cl_table)
 
-# 5. sort
+# 5. sort -------------------------------------------------------
 Cl_top    <- sort(Cl_table, decreasing = T)
 head(Cl_top,100)
 
-# 6. wordcloud
+# 6. wordcloud ---------------------------------------------------
+
 windowsFonts(baedal=windowsFont("배달의민족 도현"))
-wordcloud(names(Cl_top),Cl_top,family="baedal")
+
+palete <- brewer.pal(9,"Set3") 
+pal <- brewer.pal(5,"YlGn")
+pal1<- brewer.pal(7,"YlOrRd")
+green <- brewer.pal(6,"RdYlGn")
+red <- brewer.pal(7,"YlOrRd")
+blue <- brewer.pal(6,"Blues")
+set <- brewer.pal(7, "Set3")
+pp <- brewer.pal(7,"RdYlGn")
+
+par(bg="black")
+wordcloud(head(names(Cl_top),1000),
+          freq=Cl_top,   #
+          scale=c(3,0.1),   # 빈도가 가장 큰 단어와 가장 빈도가 작은 단어 폰트 사이 크기
+          rot.per=0.25,     # 90도 회정해서 보여줄 단어 비율.
+          min.freq=1,       # 이 값 이상 언급된 단어만 출력.
+          max.words=1000,   # 빈도 3이상 100미만 단어 표현.
+          random.order=F,   # (F)빈도가 큰 단어를 중앙에 두도록 함.
+          random.color=F,   # (T)색상랜덤/(F)빈도수순으로 색상표현.
+          colors=palete,
+          family="baedal")
+legend('top',1,"클레멘타인_WordCloud",
+       cex=0.8,
+       fill=NA,
+       border=NA,
+       bg="white",
+       text.col="red",
+       text.font=2,
+       box.col="red")
+
+
+# 6. wordcloud2 --------------------------------------------------
+
+# 전처리와 sort가 완료된 table 파일로 만든다.
+figPath = system.file("movie2.png",package = "wordcloud2")
+letterCloud(data=Cl_top, word='R',wordSize=1,fontFamily='baedal')
+
+wordcloud2(Cl_top,
+           size=0.7,
+           minSize=0,
+           gridSize=8,                # cloud 크기(2)
+           col="Deepskyblue",           # 색 변경 random-dark, random-light, rep(brewer.pal(8, "Dark2"), length.out=100)
+           rotateRatio=0,             # 회전 정도 조절
+           backgroundColor = "black", # 배경 색 
+           shape = 'star',            # circle
+           shuffle = T,
+           fontFamily = 'baedal',
+           fontWeight = 'bold',
+           ellipticity = 0.65)         # 그림의 평형정도
+#           figPath="movie2.png",
+
+##                                                 
+## ==============================================================================================
+##                               클레멘타인 그래프 시각화. 
+## ==============================================================================================
+
+# 1. 
+
+install.packages('devtools')
+library(devtools)
+install.packages('wordcloud2')
+library(wordcloud2)
