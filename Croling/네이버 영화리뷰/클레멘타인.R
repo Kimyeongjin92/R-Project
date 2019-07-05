@@ -109,7 +109,6 @@ write.xlsx(Naver_CINE_Review, file = "클레멘타인_네이버 리뷰.xlsx",
 # family 글씨체
 
 
-
 install.packages('KoNLP')        # 한글 형태소 분석
 install.packages('wordcloud')
 install.packages('wordcloud2')
@@ -124,7 +123,7 @@ library(rJava)
 # 0. 사전 추가
 useSejongDic()
 
-# 1. 데이터 불러오기
+# 1. 데이터 불러오기 ----------------------------------------
 setwd('D:/dudwlsrla92/R-Project/Croling/네이버 영화리뷰')
 getwd()
 Clementine<-read.csv('클레멘타인_네이버 리뷰(2).csv')
@@ -132,27 +131,60 @@ Clementine_reple<-as.character(Clementine$리플)
 length(Clementine_reple)
 str(Clementine_reple)
 
-# 2. extractNoun으로 명사 추출
-Clementine_Noun   <- sapply(Clementine_reple, extractNoun, USE.NAMES = F)
-head(Clementine_Noun)
-
-# 3. list -> unlist
-Clementine_unlist <- unlist(Clementine_Noun)
-
-# 4. table 
-Clementine_table  <- table(Clementine_unlist)
-
-# 5. sort
-Clementine_top    <- head(sort(Clementine_table, decreasing = T),100)
-
-# 6. wordcloud
-wordcloud(names(Clementine_top),Clementine_top,family="baedal")
-
-# 7. 단어 등록(1) : 단일로 등록할 때
+# 2. 사전에 단어 추가하기. -------------------------------------
 mergeUserDic(data.frame(c("노잼"), "ncn"))
 
-# 8. 단어 등록(2) : 파일로 등록할 때
 add_dic <- readLines("클레멘타인_추가단어.txt")
 for(i in 1:length(add_dic)){
   mergeUserDic(data.frame(add_dic[i],"ncn"))
 }
+
+# 2. 명사 추출 (extractNoun) -----------------------------------
+Clementine_Noun   <- sapply(Clementine_reple, extractNoun, USE.NAMES = F)
+head(Clementine_Noun)
+
+# 3. 중간저장 (unlist) --------------------------------------------
+write(unlist(Clementine_Noun),"클레멘타인_전처리1.txt")
+Cl_unlist <- readLines("클레멘타인_전처리1.txt")
+head(Cl_unlist)
+
+# 4. 전처리 (1)_정규식 -----------------------------------------
+Cl_filter <- gsub("\\d+","",Cl_unlist)
+Cl_filter <- gsub("ㄱ-ㅎ","",Cl_filter)
+Cl_filter <- gsub("ㅜ|ㅠ","",Cl_filter)
+Cl_filter <- gsub('[~^!@#$%&*()_+=?<>]','',Cl_filter)
+Cl_filter <- gsub("클레멘타인\\S*","클레멘타인",Cl_filter)
+Cl_filter <- gsub("나았습니\\S*","병이나았어",Cl_filter)
+Cl_filter <- gsub("감사합니\\S*","감사해",Cl_filter)
+Cl_filter <- gsub('[~^!@#$%&*()_+=?<>]','',Cl_filter)
+Cl_filter <- gsub(" ","",Cl_filter)
+
+Cl_filter  <- Filter(function(x){nchar(x) >= 2 & nchar(x) <= 6},Cl_filter)
+
+# 4. 전처리 (2)_gsub -------------------------------------------
+txt <- readLines("클레멘타인gsub.txt")
+
+i <- 0
+for(i in 1:length(txt)){
+  Cl_filter <- gsub((txt[i]),"",Cl_filter)
+}
+
+Cl_filter2  <- Filter(function(x){nchar(x) >= 2 & nchar(x) <= 6},Cl_filter)
+head(Cl_filter2)
+
+# 5. 중간저장 write -------------------------------------------
+write(Cl_filter2,"클레멘타인_전처리2.txt")
+Cl <- readLines("클레멘타인_전처리2.txt")
+head(Cl)
+
+# 4. table 
+Cl_table  <- table(Cl)
+head(Cl_table)
+
+# 5. sort
+Cl_top    <- sort(Cl_table, decreasing = T)
+head(Cl_top,100)
+
+# 6. wordcloud
+windowsFonts(baedal=windowsFont("배달의민족 도현"))
+wordcloud(names(Cl_top),Cl_top,family="baedal")
