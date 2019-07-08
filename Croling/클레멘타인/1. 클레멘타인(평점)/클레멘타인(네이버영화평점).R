@@ -3,6 +3,11 @@
 ##                               클레멘타인 네이버 영화 리뷰. 
 ## ==============================================================================================
 
+install.packages('rvest')
+install.packages('dplyr')
+install.packages('stringr')
+install.packages('lubridate')
+install.packages('xlsx')
 library(rvest)
 library(dplyr)
 library(stringr)
@@ -97,94 +102,9 @@ write.xlsx(Naver_CINE_Review, file = "클레멘타인_네이버 리뷰.xlsx",
            sheetName="클레멘타인",
            col.names=T,row.names=F,append=F)
 
-
-
 ##                                                 
 ## ==============================================================================================
-##                               클레멘타인 네이버 블로그 리뷰. 
-## ==============================================================================================
-library(lubridate)
-# 영화 클레멘타인 -이터널
-https://search.naver.com/search.naver?date_from=&date_option=0&date_to=&dup_remove=1&nso=&post_blogurl=&post_blogurl_without=&query=%EC%98%81%ED%99%94%20%ED%81%B4%EB%A0%88%EB%A9%98%ED%83%80%EC%9D%B8%20-%EC%9D%B4%ED%84%B0%EB%84%90&sm=tab_pge&srchby=all&st=sim&where=post&start=1
-
-https://search.naver.com/search.naver?date_from=20040521&date_option=8&date_to=20071231&dup_remove=0&nso=p%3Afrom20040521to20071231&post_blogurl=&post_blogurl_without=&query=%EC%98%81%ED%99%94%20%ED%81%B4%EB%A0%88%EB%A9%98%ED%83%80%EC%9D%B8%20-%EC%9D%B4%ED%84%B0%EB%84%90&sm=tab_pge&srchby=all&st=sim&where=post&start=1
-base_url <- 'https://search.naver.com/search.naver?date_from=&date_option=0&date_to=&dup_remove=1&nso=&post_blogurl=&post_blogurl_without=&query=%EC%98%81%ED%99%94%20%ED%81%B4%EB%A0%88%EB%A9%98%ED%83%80%EC%9D%B8%20-%EC%9D%B4%ED%84%B0%EB%84%90&sm=tab_pge&srchby=all&st=sim&where=post&start='
-
-a <- 'https://search.naver.com/search.naver?date_from=201'
-b <- '0101&date_option=8&date_to=201'
-c <- '1231&dup_remove=0&nso=p%3Afrom201'
-d <- '0101to201'
-e <- '1231&post_blogurl=&post_blogurl_without=&query=%EC%98%81%ED%99%94%20%ED%81%B4%EB%A0%88%EB%A9%98%ED%83%80%EC%9D%B8%20-%EC%9D%B4%ED%84%B0%EB%84%90&sm=tab_pge&srchby=all&st=sim&where=post&start='
-
-urls  <- NULL
-urlss <- NULL
-i <- 0
-k <- 0
-for(i in 0:9){
-  urls <- paste0(a,i,b,i,c,i,d,i,e)
-  print(urls)
-  for(k in 0:99){
-    urlss[k+1] <- paste0(urls, k*10+1)
-    print(urlss)
- }
-}
-
-
-
-#urls <- NULL
-#for(i in 0:470){
-#  urls[i+1] <- paste0(base_url, i*10+1) 
-#  print(i)
-#}
-#head(urls,100)
-
-title <- NULL
-txt   <- NULL
-date  <- NULL
-
-i <- 0
-for(url in urlss){
-  i <- i + length(url)
-  print(i)
-  
-  html <- read_html(url)
-  title <- c(title, html %>%
-                html_nodes('#main_pack') %>%
-                html_nodes('#elThumbnailResultArea') %>%
-                html_nodes('dt') %>%
-                html_node('a') %>%
-                html_text())
-  date   <- c(date, html %>%
-                html_nodes('#main_pack') %>%
-                html_nodes('#elThumbnailResultArea') %>%
-                html_nodes('.txt_inline') %>%
-                html_text())
-  txt    <- c(txt, html %>%
-                html_nodes('#main_pack') %>%
-                html_nodes('#elThumbnailResultArea') %>%
-                html_nodes('.sh_blog_top') %>%
-                html_nodes('dl') %>%
-                html_node('.sh_blog_passage') %>%
-                html_text()) 
-}
-
-
-N_blog_Cl <- data.frame(제목 = title,
-                        내용 = txt,
-                        날짜 = date)
-View(N_blog_Cl)
-str(N_blog_Cl)
-a<-N_blog_Cl[!(table(N_blog_Cl$제목==""),]
-
-                          str_replace_all("\\.","-") %>% 
-                          str_sub(1,10) %>%
-                          as.Date())
-
-
-
-##                                                 
-## ==============================================================================================
-##                               클레멘타인 워드 클라우드. 
+##                               클레멘타인(평점) 워드 클라우드. 
 ## ==============================================================================================
 ## https://kutar37.tistory.com/entry/R%EC%9D%84-%EC%9D%B4%EC%9A%A9%ED%95%9C-%ED%85%8D%EC%8A%A4%ED%8A%B8%EB%A7%88%EC%9D%B4%EB%8B%9D-%EC%9B%8C%EB%93%9C%ED%81%B4%EB%9D%BC%EC%9A%B0%EB%93%9C
 ## https://cran.r-project.org/web/packages/wordcloud2/wordcloud2.pdf  
@@ -268,9 +188,9 @@ head(Cl_filter2)
 write(Cl_filter2,"클레멘타인_전처리2.txt")
 Cl <- readLines("클레멘타인_전처리2.txt")
 head(Cl)
--
+
 # 4. table ------------------------------------------------------
-Cl_table  <- table(Cl)
+Cl_table <- table(Cl)
 head(Cl_table)
 
 # 5. sort -------------------------------------------------------
@@ -314,14 +234,13 @@ legend('top',1,"클레멘타인_WordCloud",
 # 6. wordcloud2 --------------------------------------------------
 
 # 전처리와 sort가 완료된 table 파일로 만든다.
-figPath = system.file("movie2.png",package = "wordcloud2")
-letterCloud(data=Cl_top, word='R',wordSize=1,fontFamily='baedal')
-
+a <- "white"
+a <- c(a, rep("gold", length.out=Cl_top))
 wordcloud2(Cl_top,
            size=0.7,
            minSize=0,
            gridSize=8,                # cloud 크기(2)
-           col="Deepskyblue",           # 색 변경 random-dark, random-light, rep(brewer.pal(8, "Dark2"), length.out=100)
+           col=a,           # 색 변경 random-dark, random-light, rep(brewer.pal(8, "Dark2"), length.out=100)
            rotateRatio=0,             # 회전 정도 조절
            backgroundColor = "black", # 배경 색 
            shape = 'star',            # circle
@@ -331,6 +250,10 @@ wordcloud2(Cl_top,
            ellipticity = 0.65)         # 그림의 평형정도
 #           figPath="movie2.png",
 
+install.packages('devtools')
+library(devtools)
+install.packages('wordcloud2')
+library(wordcloud2)
 ##                                                 
 ## ==============================================================================================
 ##                               클레멘타인 그래프 시각화. 
@@ -338,7 +261,4 @@ wordcloud2(Cl_top,
 
 # 1. 
 
-install.packages('devtools')
-library(devtools)
-install.packages('wordcloud2')
-library(wordcloud2)
+
