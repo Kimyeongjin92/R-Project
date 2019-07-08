@@ -157,12 +157,11 @@ library(rJava)
 useSejongDic()
 
 # 1. 데이터 불러오기 ---------------------------------------------
-setwd('D:/dudwlsrla92/R-Project/Croling/네이버 영화리뷰')
+setwd('D:/dudwlsrla92/R-Project/Croling/클레멘타인/2. 클레멘타인(블로그)')
 getwd()
-Clementine<-read.csv('클레멘타인_네이버 리뷰(2).csv')
-Clementine_reple<-as.character(Clementine$리플)
-length(Clementine_reple)
-str(Clementine_reple)
+Clementine<-read.csv('클레멘타인(네이버블로그).csv')
+Clementine_title<-as.character(Clementine$제목)
+Clementine_txt<-as.character(Clementine$내용)
 
 # 2. 사전에 단어 추가하기. ---------------------------------------
 mergeUserDic(data.frame(c("노잼"), "ncn"))
@@ -173,23 +172,25 @@ for(i in 1:length(add_dic)){
 }
 
 # 2. 명사 추출 (extractNoun) -------------------------------------
-Clementine_Noun   <- sapply(Clementine_reple, extractNoun, USE.NAMES = F)
-head(Clementine_Noun)
+Clementine_title_Noun   <- sapply(Clementine_title, extractNoun, USE.NAMES = F)
+Clementine_txt_Noun   <- sapply(Clementine_txt, extractNoun, USE.NAMES = F)
+head(Clementine_title_Noun)
+head(Clementine_txt_Noun)
 
 # 3. 중간저장 (unlist) --------------------------------------------
-write(unlist(Clementine_Noun),"클레멘타인_전처리1.txt")
-Cl_unlist <- readLines("클레멘타인_전처리1.txt")
-head(Cl_unlist)
+write(unlist(Clementine_title_Noun),"클레멘타인_전처리(title).txt")
+write(unlist(Clementine_txt_Noun),"클레멘타인_전처리(txt).txt")
+
+Cl_title_unlist <- readLines("클레멘타인_전처리(title).txt")
+Cl_txt_unlist <- readLines("클레멘타인_전처리(txt).txt")
+head(Cl_title_unlist)
+head(Cl_txt_unlist)
 
 # 4. 전처리 (1)_정규식 --------------------------------------------
-Cl_filter <- gsub("\\d+","",Cl_unlist)
+Cl_filter <- gsub("\\d+","",Cl_txt_unlist)
 Cl_filter <- gsub("ㄱ-ㅎ","",Cl_filter)
 Cl_filter <- gsub("ㅜ|ㅠ","",Cl_filter)
-Cl_filter <- gsub('[~^!@#$%&*()_+=?<>]','',Cl_filter)
-Cl_filter <- gsub("클레멘타인\\S*","클레멘타인",Cl_filter)
-Cl_filter <- gsub("나았습니\\S*","병이나았어",Cl_filter)
-Cl_filter <- gsub("감사합니\\S*","감사해",Cl_filter)
-Cl_filter <- gsub('[~^!@#$%&*()_+=?<>]','',Cl_filter)
+Cl_filter <- gsub('[~^!"@#$%&*()_+=?<>]','',Cl_filter)
 Cl_filter <- gsub(" ","",Cl_filter)
 
 Cl_filter  <- Filter(function(x){nchar(x) >= 2 & nchar(x) <= 6},Cl_filter)
@@ -202,12 +203,12 @@ for(i in 1:length(txt)){
   Cl_filter <- gsub((txt[i]),"",Cl_filter)
 }
 
-Cl_filter2  <- Filter(function(x){nchar(x) >= 2 & nchar(x) <= 6},Cl_filter)
+Cl_filter2  <- Filter(function(x){nchar(x) >= 2 & nchar(x) <= 5},Cl_filter)
 head(Cl_filter2)
 
 # 5. 중간저장 write ---------------------------------------------
-write(Cl_filter2,"클레멘타인_전처리2.txt")
-Cl <- readLines("클레멘타인_전처리2.txt")
+write(Cl_filter2,"클레멘타인_전처리2(txt).txt")
+Cl <- readLines("클레멘타인_전처리2(txt).txt")
 head(Cl)
 
 # 4. table ------------------------------------------------------
