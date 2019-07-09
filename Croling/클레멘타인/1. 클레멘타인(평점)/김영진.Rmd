@@ -114,10 +114,11 @@ write.csv(Naver_CINE_Review, file = "클레멘타인_네이버 리뷰(2).csv",
            col.names=T,row.names=F,append=F)
 
 ```
-### 결과물
+
+### **결과물**
 ```{r}
 Clementine<-read.csv('클레멘타인_네이버 리뷰(2).csv')
-str(Clementine)
+head(Clementine,10)
 ```
 <br>
 
@@ -327,15 +328,47 @@ clementine<-read.csv('클레멘타인_네이버 리뷰(2).csv')
 
 <br>
 
+### **[점수별 빈도표]**
+```{r}
+library(dplyr)
+library(ggplot2)
+library(stringr)
+windowsFonts(baedal=windowsFont("배달의민족 도현"))
+
+clementine<-read.csv('클레멘타인_네이버 리뷰(2).csv')
+clementine %>%
+  group_by(점수) %>% 
+  summarise(갯수=n()) %>% 
+  ggplot(aes(x=as.factor(점수), y=갯수, fill=as.factor(점수)))+
+  geom_bar(stat="identity",color="black") +
+    geom_text(aes(y=갯수+1000,label=갯수), 
+            color='black',
+            size=5,
+            family="baedal") +
+  theme_bw(base_family='baedal',
+           base_size = 10,
+           base_rect_size = 4,
+           base_line_size = 1) +
+  labs(x='점수') +
+  ggtitle('클레멘타인 평점별 댓글수') +
+  theme(legend.position = "none",
+        plot.title = element_text(family="baedal",
+                                  face = "bold",
+                                  hjust = 0.5,
+                                  vjust = 1,
+                                  size = 18, 
+                                  color = "black")) 
+```
+
+
+
+<br>
+
 ### **[년도별 평점합계]**
 
 ```{r}
 # 1. 년도별 평점합계
-library(dplyr)
-library(ggplot2)
-library(stringr)
 
-clementine<-read.csv('클레멘타인_네이버 리뷰(2).csv')
 clementine %>%
   filter(년도>2003) %>%
   group_by(년도) %>% 
@@ -371,6 +404,10 @@ clementine %>%
                                   size = 18, 
                                   color = "black")) 
 ```
+<br>
+#### **가장 높은 년도<br>**
+#### **2014년 : 평점합계 & 평점갯수<br>**
+#### **2011년 : 평점평균 9.56점 <br>**
 
 <br>
 
@@ -411,6 +448,10 @@ clementine %>%
                                   color = "black")) 
 
 ```
+<br>
+#### **가장 높은 월<br>**
+#### **7월    : 평점합계 & 평점갯수<br>**
+#### **9,11월 : 평점평균 9.48점 <br>**
 
 <br>
 
@@ -451,6 +492,10 @@ clementine %>%
                                   size = 18, 
                                   color = "black")) 
 ```
+<br>
+#### **가장 높은 일<br>**
+#### **17일 : 평점합계 & 평점갯수<br>**
+#### **11월 : 평점평균 9.53점 <br>**
 
 <br>
 
@@ -493,4 +538,7 @@ clementine %>%
                                   color = "black"))
 
 ```
-
+<br>
+#### **가장 높은 시간<br>**
+#### **23시 : 평점합계 & 평점갯수<br>**
+#### **10시 : 평점평균 9.55점 <br>**
