@@ -256,8 +256,7 @@ legend('top',1,"클레멘타인_WordCloud",
 # 6. wordcloud2 --------------------------------------------------
 
 # 전처리와 sort가 완료된 table 파일로 만든다.
-a <- "white"
-a <- c(a, rep("gold", length.out=Cl_top))
+a <- c("white", rep("gold", length(Cl_top)))
 wordcloud2(Cl_top,
            size=0.7,
            minSize=0,
